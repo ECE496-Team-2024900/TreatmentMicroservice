@@ -1,4 +1,4 @@
-name: Deploy Treatment Microservice
+name: Deploy Treatment Microservice #name of service
 
 on:
   push:
