@@ -72,17 +72,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'treatmentserver.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -123,3 +112,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',  # Use 'mysql' if using MySQL
+        'NAME': 'postgres',                     # Name of your database
+        'USER': 'postgres',
+        'PASSWORD': 'ieqaBSdrnhRBOeuE3qo5',
+        'HOST': 'database-capstone-treatment.cns26sooon4s.ca-central-1.rds.amazonaws.com',                 # RDS endpoint without 'http://'
+        'PORT': '5432',                             # Default PostgreSQL port
+    }
+}
