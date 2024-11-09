@@ -31,4 +31,6 @@ class TreatmentSession(models.Model):
     handshake_random_string = models.CharField(max_length=10)
     handshake_counter = models.IntegerField()
 
+    class Meta:
+        db_table = 'treatment_sessions'
 

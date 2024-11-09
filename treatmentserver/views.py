@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 
 from django.shortcuts import render
-from rest_framework.response import JsonResponse
 from rest_framework.decorators import api_view
 from base.models import TreatmentSession
 from .serializers import TreatmentSessionSerializer
@@ -15,11 +14,11 @@ def index(request):
 # Expects a treatment ID
 @api_view(['POST'])
 def set_treatment_parameters(request):
-    treatment_id = request.POST['id']
+    treatment_id = request.GET.get('id', None)
     if treatment_id is None:
         return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
     try:
-        updated_parameters = json.loads(requests.body)
+        updated_parameters = json.loads(request.body)
         TreatmentSession.objects.filter(pk=treatment_id).update(**updated_parameters)
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
