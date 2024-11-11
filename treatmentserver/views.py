@@ -1,6 +1,6 @@
 from django.http import JsonResponse
-
-from treatmentserver.models import TreatmentSessions
+from rest_framework.decorators import api_view
+from .models import TreatmentSessions
 def index(request):
     return JsonResponse({"message": "This is the treatment microservice"})
 
