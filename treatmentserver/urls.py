@@ -22,6 +22,6 @@ from treatmentserver import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
-    path('/get_video_call_id', views.get_video_call_id),
-    path('/add_video_call_id', views.add_video_call_id)
+    path('/treatment/get_video_call_id', views.get_video_call_id),
+    path('/treatment/add_video_call_id', views.add_video_call_id)
 ]
