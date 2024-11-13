@@ -22,3 +22,24 @@ def get_video_call_id():
         return JsonResponse({"message": str(obj.video_call_id)}, status=200)
     except TreatmentSessions.DoesNotExist:
         return JsonResponse({"message": "Video Call ID not found"}, status=404)
+
+@api_view(['GET'])
+def get_treatment_timer(request, treatment_id):
+    try:
+        # Fetch the treatment session using the provided treatment ID
+        treatment_session = TreatmentSessions.objects.get(id=treatment_id)
+
+        # Get the relevant timer values, defaulting to 5 minutes (300 seconds) if they are None
+        drug_timer = treatment_session.estimated_duration_for_drug_administration or 5 * 60  # 5 minutes (in seconds)
+        light_timer = treatment_session.estimated_duration_for_light_administration or 5 * 60  # 5 minutes (in seconds)
+        wash_timer = treatment_session.estimated_duration_for_wash_administration or 5 * 60  # 5 minutes (in seconds)
+
+        # Return the timers as a JSON response
+        return JsonResponse({
+            "drug_timer": drug_timer,
+            "light_timer": light_timer,
+            "wash_timer": wash_timer
+        }, status=200)
+
+    except TreatmentSessions.DoesNotExist:
+        return JsonResponse({"message": "Treatment session not found"}, status=404)
