@@ -4,8 +4,7 @@ from django.db import models
 
 class TreatmentSession(models.Model):
     notes = models.CharField(max_length=65535)
-    id = models.IntegerField(primary_key=True)
-    wound_id = models.ForeignKey('Wounds', models.DO_NOTHING)
+    wound = models.ForeignKey('Wounds', models.DO_NOTHING)
     status_of_device = models.CharField(max_length=32)
     drug_volume_required = models.IntegerField()
     laser_power_required = models.IntegerField()
@@ -36,7 +35,6 @@ class TreatmentSession(models.Model):
         db_table = 'treatment_sessions'
 
 class Wounds(models.Model):
-    id = models.IntegerField(primary_key=True)
     patient_id = models.IntegerField()
     clinician_id = models.IntegerField()
     device_id = models.CharField()
