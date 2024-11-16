@@ -2,9 +2,10 @@ from django.http import JsonResponse
 
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from base.models import TreatmentSession
+from base.models import TreatmentSession, Wounds
 from .serializers import TreatmentSessionSerializer
 import json
+from datetime import datetime
 
 def index(request):
     return JsonResponse({"message": "This is the treatment microservice"})
@@ -23,3 +24,28 @@ def set_treatment_parameters(request):
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse({'message':'Requested changes were successfully made'}, status=200)
+
+# Retrieves a patient's most recent treatment before a given day
+# Expects a patient ID and treatment date to look before
+@api_view(['GET'])
+def get_prev_treatment(request):
+    patient_id = request.GET.get('id', None)
+    treatment_date = request.GET.get('date', None)
+    if (patient_id is None) or (treatment_date is None):
+        return JsonResponse({'message':'Please provide a patient ID and current session number'}, status=400)
+    try:
+        treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
+        sorted_prev_treatments = TreatmentSession.objects.filter(
+                                    wound_id__patient_id=patient_id,
+                                    date_scheduled__lt=treatment_date
+                                ).order_by('-date_scheduled')
+        prev_treatment = sorted_prev_treatments.first()
+
+        if prev_treatment is None:
+            return JsonResponse({'message': 'No previous treatment found for the given patient and date.'}, status=204)
+
+        treatment_data = serialize('json', [prev_treatment])
+        treatment_object = treatment_data[0]['fields']
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+    return JsonResponse(treatment_object, status=200)

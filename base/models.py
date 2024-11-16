@@ -5,7 +5,7 @@ from django.db import models
 class TreatmentSession(models.Model):
     notes = models.CharField(max_length=65535)
     id = models.IntegerField(primary_key=True)
-    wound_id = models.IntegerField()
+    wound_id = models.ForeignKey('Wounds', models.DO_NOTHING)
     status_of_device = models.CharField(max_length=32)
     drug_volume_required = models.IntegerField()
     laser_power_required = models.IntegerField()
@@ -25,12 +25,22 @@ class TreatmentSession(models.Model):
     started = models.BooleanField()
     paused = models.BooleanField()
     completed = models.BooleanField()
-    date = models.DateField()
+    date_scheduled = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
     handshake_random_string = models.CharField(max_length=10)
     handshake_counter = models.IntegerField()
+    session_number = models.IntegerField()
 
     class Meta:
         db_table = 'treatment_sessions'
 
+class Wounds(models.Model):
+    id = models.IntegerField(primary_key=True)
+    patient_id = models.IntegerField()
+    clinician_id = models.IntegerField()
+    device_id = models.CharField()
+    treated = models.BooleanField()
+
+    class Meta:
+        db_table = 'wounds'
