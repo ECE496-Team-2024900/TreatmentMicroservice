@@ -36,7 +36,7 @@ def get_prev_treatment(request):
     try:
         treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
         sorted_prev_treatments = TreatmentSession.objects.filter(
-                                    wound_id__patient_id=patient_id,
+                                    wound__patient_id=patient_id,
                                     date_scheduled__lt=treatment_date
                                 ).order_by('-date_scheduled')
         prev_treatment = sorted_prev_treatments.first()
