@@ -152,6 +152,7 @@ class TreatmentSessions(models.Model):
     handshake_random_string = models.CharField(blank=True, null=True)
     handshake_counter = models.IntegerField(blank=True, null=True)
     session_number = models.IntegerField()
+    pain_score = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False

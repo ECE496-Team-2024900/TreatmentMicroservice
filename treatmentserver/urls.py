@@ -24,5 +24,6 @@ urlpatterns = [
     path('', views.index),
     path('/get_video_call_id', views.get_video_call_id),
     path('/add_video_call_id', views.add_video_call_id),
-    path('get_session_info', views.get_session_info)
+    path('get_session_info', views.get_session_info),
+    path('set_pain_score_and_session_complete', views.set_pain_score_and_session_complete)
 ]
