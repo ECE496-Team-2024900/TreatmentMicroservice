@@ -150,6 +150,7 @@ class TreatmentSessions(models.Model):
     end_time = models.DateTimeField(blank=True, null=True)
     handshake_random_string = models.CharField(blank=True, null=True)
     handshake_counter = models.IntegerField(blank=True, null=True)
+    video_call_id = models.CharField(blank=True, null=True)
 
     class Meta:
         managed = False

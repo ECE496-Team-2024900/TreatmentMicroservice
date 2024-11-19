@@ -1,3 +1,5 @@
+from sys import exception
+import json
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from .models import TreatmentSessions
@@ -6,19 +8,39 @@ def index(request):
 
 @api_view(['PUT'])
 def add_video_call_id(request):
-    req = request.get_json()
+    req = json.loads(request.body.decode('utf-8'))
     try:
         obj = TreatmentSessions.objects.get(id=req['id'])
-        obj.video_call_id = req['video_call_id']
-        obj.save()
-        return JsonResponse({"message": "Video Call ID is updated"}, status=200)
-    except TreatmentSessions.DoesNotExist:
-        return JsonResponse({"message": "Video Call ID not found"}, status=404)
+        if (obj is not None):
+            obj.video_call_id = req['video_call_id']
+            obj.save()
+            return JsonResponse({"message": "Video Call ID is updated"}, status=200)
+        else:
+            return JsonResponse({"message": "Video Call ID not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
 
 @api_view(['GET'])
-def get_video_call_id():
+def get_video_call_id(request):
     try:
-        obj = TreatmentSessions.objects.filter(video_call_id__isnull=False).first()
-        return JsonResponse({"message": str(obj.video_call_id)}, status=200)
-    except TreatmentSessions.DoesNotExist:
-        return JsonResponse({"message": "Video Call ID not found"}, status=404)
+        obj = TreatmentSessions.objects.exclude(video_call_id__isnull=True).first()
+        if (obj is not None):
+            return JsonResponse({"message": str(obj.video_call_id)}, status=200)
+        else:
+            return JsonResponse({"message": "Video Call ID not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['PUT'])
+def remove_video_call_id(request):
+    req = json.loads(request.body.decode('utf-8'))
+    try:
+        obj = TreatmentSessions.objects.get(id=req['id'])
+        if (obj is not None):
+            obj.video_call_id = None
+            obj.save()
+            return JsonResponse({"message": "Video Call ID is updated"}, status=200)
+        else:
+            return JsonResponse({"message": "Video Call ID not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
