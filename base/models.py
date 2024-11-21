@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 
@@ -30,6 +31,8 @@ class TreatmentSession(models.Model):
     handshake_random_string = models.CharField(max_length=10)
     handshake_counter = models.IntegerField()
     session_number = models.IntegerField()
+    video_call_id = models.CharField(blank=True, null=True)
+    image_urls = ArrayField(models.CharField(), default=list)
 
     class Meta:
         db_table = 'treatment_sessions'

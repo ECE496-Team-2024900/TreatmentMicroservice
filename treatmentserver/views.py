@@ -3,9 +3,9 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from base.models import TreatmentSession, Wounds
-from .serializers import TreatmentSessionSerializer
 import json
 from datetime import datetime
+from django.forms.models import model_to_dict
 
 def index(request):
     return JsonResponse({"message": "This is the treatment microservice"})
@@ -13,7 +13,7 @@ def index(request):
 # Store updated parameters
 # Expects a JSON body with key-value pairs that denote fields to update and the updated value
 # Expects a treatment ID
-@api_view(['POST'])
+@api_view(['PUT'])
 def set_treatment_parameters(request):
     treatment_id = request.GET.get('id', None)
     if treatment_id is None:
@@ -44,8 +44,6 @@ def get_prev_treatment(request):
         if prev_treatment is None:
             return JsonResponse({'message': 'No previous treatment found for the given patient and date.'}, status=204)
 
-        treatment_data = serialize('json', [prev_treatment])
-        treatment_object = treatment_data[0]['fields']
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
-    return JsonResponse(treatment_object, status=200)
+    return JsonResponse(model_to_dict(prev_treatment), status=200)
