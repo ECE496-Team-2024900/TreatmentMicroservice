@@ -32,7 +32,7 @@ def get_prev_treatment(request):
     patient_id = request.GET.get('id', None)
     treatment_date = request.GET.get('date', None)
     if (patient_id is None) or (treatment_date is None):
-        return JsonResponse({'message':'Please provide a patient ID and current session number'}, status=400)
+        return JsonResponse({'message':'Please provide a patient ID and date.'}, status=400)
     try:
         treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
         sorted_prev_treatments = TreatmentSession.objects.filter(
@@ -47,3 +47,21 @@ def get_prev_treatment(request):
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse(model_to_dict(prev_treatment), status=200)
+
+# Retrieves a patient's most recent treatment before a given day
+# Expects a patient ID and treatment date to look before
+@api_view(['GET'])
+def get_treatment_parameters(request):
+    treatment_id = request.GET.get('id', None)
+    if treatment_id is None:
+        return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
+    try:
+        treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
+        treatment = TreatmentSession.objects.filter(pk=treatment_id)
+
+        if treatment is None:
+            return JsonResponse({'message': 'No treatment found for the given ID.'}, status=204)
+
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+    return JsonResponse(model_to_dict(treatment), status=200)

@@ -23,5 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
     path('treatment/parameters/set', views.set_treatment_parameters),
-    path('treatment/parameters/prev', views.get_prev_treatment)
+    path('treatment/parameters/prev', views.get_prev_treatment).
+    path('treatment/parameters/get', views.get_treatment_parameters)
 ]
