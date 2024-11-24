@@ -3,7 +3,7 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from .models import TreatmentSession, Wounds
+from .models import TreatmentSessions, Wounds
 from datetime import datetime
 from django.forms.models import model_to_dict
 
@@ -102,5 +102,16 @@ def remove_video_call_id(request):
             return JsonResponse({"message": "Video Call ID is updated"}, status=200)
         else:
             return JsonResponse({"message": "Video Call ID not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_all_treatments(request):
+    try:
+        obj = TreatmentSessions.objects.all()
+        if (obj is not None):
+            return JsonResponse({"message": list(obj.values())}, status=200)
+        else:
+            return JsonResponse({"message": "No treatment sessions exist"}, status=404)
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
