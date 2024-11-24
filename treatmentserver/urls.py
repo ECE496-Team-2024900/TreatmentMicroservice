@@ -17,9 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from treatmentserver import views
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index)
+    path('', views.index),
+    path('treatment/get_video_call_id', views.get_video_call_id),
+    path('treatment/add_video_call_id', views.add_video_call_id),
+    path('treatment/remove_video_call_id', views.remove_video_call_id)
+
 ]
