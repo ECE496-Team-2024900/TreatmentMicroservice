@@ -29,4 +29,5 @@ urlpatterns = [
     path('treatment/add_video_call_id', views.add_video_call_id),
     path('treatment/remove_video_call_id', views.remove_video_call_id),
     path('treatment/get_all_treatments', views.get_all_treatments),
+    path('treatment/get_all_wounds', views.get_all_wounds),
 ]

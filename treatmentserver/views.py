@@ -1,5 +1,7 @@
 from sys import exception
 import json
+
+from django.core.serializers import serialize
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view
@@ -109,6 +111,17 @@ def remove_video_call_id(request):
 def get_all_treatments(request):
     try:
         obj = TreatmentSessions.objects.all()
+        if (obj is not None):
+            return JsonResponse({"message": list(obj.values())}, status=200)
+        else:
+            return JsonResponse({"message": "No treatment sessions exist"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_all_wounds(request):
+    try:
+        obj = Wounds.objects.all()
         if (obj is not None):
             return JsonResponse({"message": list(obj.values())}, status=200)
         else:
