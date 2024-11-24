@@ -1,9 +1,9 @@
+from sys import exception
+import json
 from django.http import JsonResponse
-
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from base.models import TreatmentSession, Wounds
-import json
+from .models import TreatmentSession, Wounds
 from datetime import datetime
 from django.forms.models import model_to_dict
 
@@ -65,3 +65,42 @@ def get_treatment_parameters(request):
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse(model_to_dict(treatment), status=200)
+
+@api_view(['PUT'])
+def add_video_call_id(request):
+    req = json.loads(request.body.decode('utf-8'))
+    try:
+        obj = TreatmentSessions.objects.get(id=req['id'])
+        if (obj is not None):
+            obj.video_call_id = req['video_call_id']
+            obj.save()
+            return JsonResponse({"message": "Video Call ID is updated"}, status=200)
+        else:
+            return JsonResponse({"message": "Video Call ID not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_video_call_id(request):
+    try:
+        obj = TreatmentSessions.objects.exclude(video_call_id__isnull=True).first()
+        if (obj is not None):
+            return JsonResponse({"message": str(obj.video_call_id)}, status=200)
+        else:
+            return JsonResponse({"message": "Video Call ID not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['PUT'])
+def remove_video_call_id(request):
+    req = json.loads(request.body.decode('utf-8'))
+    try:
+        obj = TreatmentSessions.objects.get(id=req['id'])
+        if (obj is not None):
+            obj.video_call_id = None
+            obj.save()
+            return JsonResponse({"message": "Video Call ID is updated"}, status=200)
+        else:
+            return JsonResponse({"message": "Video Call ID not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)

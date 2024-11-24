@@ -35,6 +35,10 @@ CREATE TABLE "treatment_sessions" (
   "end_time" timestamp,
   "handshake_random_string" varchar,
   "handshake_counter" integer
+  "session_number" integer NOT NULL,
 );
 
 ALTER TABLE "treatment_sessions" ADD FOREIGN KEY ("wound_id") REFERENCES "wounds" ("id");
+
+ALTER TABLE "treatment_sessions"
+ADD "video_call_id" varchar;
