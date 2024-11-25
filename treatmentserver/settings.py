@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ch-jju&*x9l)!qa*mo@4!zg!j)-0yowq953v+%hu)jen_b3((j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2']
+ALLOWED_HOSTS = ['3.21.241.51', 'localhost', '127.0.0.1', 'ec2-3-21-241-51.us-east-2.compute.amazonaws.com', '10.0.2.2']
 
 
 # Application definition
@@ -37,10 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'treatmentserver',
     'corsheaders',
     'storages'
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -74,7 +74,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'treatmentserver.wsgi.application'
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
