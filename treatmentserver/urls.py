@@ -22,6 +22,7 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
+    path('treatment/get_session_info', views.get_session_info),
     path('treatment/parameters/set', views.set_treatment_parameters),
     path('treatment/parameters/prev', views.get_prev_treatment),
     path('treatment/parameters/get', views.get_treatment_parameters),

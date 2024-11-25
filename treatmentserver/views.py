@@ -104,3 +104,22 @@ def remove_video_call_id(request):
             return JsonResponse({"message": "Video Call ID not found"}, status=404)
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
+        return JsonResponse({"message": str(obj.video_call_id)})
+    except TreatmentSessions.DoesNotExist:
+        return JsonResponse({"message": "Video Call ID not found"})
+
+@api_view(['GET'])
+def get_session_info(request):
+    treatment_id = request.GET.get("id")
+    try:
+        obj = TreatmentSessions.objects.get(id=treatment_id)
+        if obj is None:
+            return JsonResponse({"message": "Treatment session id not found"}, status=400)
+        
+        return JsonResponse({
+            "session_number": str(obj.session_number),
+            "date": str(obj.date_scheduled),
+            "time": str(obj.start_time_scheduled)
+        })
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
