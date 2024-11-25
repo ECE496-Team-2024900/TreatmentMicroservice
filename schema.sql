@@ -42,3 +42,6 @@ ALTER TABLE "treatment_sessions" ADD FOREIGN KEY ("wound_id") REFERENCES "wounds
 
 ALTER TABLE "treatment_sessions"
 ADD "video_call_id" varchar;
+
+ALTER TABLE "treatment_sessions"
+ADD "image_urls" varchar[];

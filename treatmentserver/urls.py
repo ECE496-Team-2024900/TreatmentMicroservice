@@ -28,5 +28,6 @@ urlpatterns = [
     path('treatment/parameters/get', views.get_treatment_parameters),
     path('treatment/get_video_call_id', views.get_video_call_id),
     path('treatment/add_video_call_id', views.add_video_call_id),
-    path('treatment/remove_video_call_id', views.remove_video_call_id)
+    path('treatment/remove_video_call_id', views.remove_video_call_id),
+    path('treatment/add_image', views.add_images),
 ]
