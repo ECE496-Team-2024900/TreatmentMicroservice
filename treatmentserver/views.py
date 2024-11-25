@@ -103,8 +103,8 @@ def get_video_call_id(request):
 
 @api_view(['PUT'])
 def remove_video_call_id(request):
-    req = json.loads(request.body.decode('utf-8'))
     try:
+        req = json.loads(request.body.decode('utf-8'))
         obj = TreatmentSessions.objects.get(id=req['id'])
         if (obj is not None):
             obj.video_call_id = None
