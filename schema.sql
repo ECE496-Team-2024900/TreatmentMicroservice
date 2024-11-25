@@ -40,3 +40,6 @@ CREATE TABLE "treatment_sessions" (
 );
 
 ALTER TABLE "treatment_sessions" ADD FOREIGN KEY ("wound_id") REFERENCES "wounds" ("id");
+
+ALTER TABLE "treatment_sessions"
+ADD "video_call_id" varchar;

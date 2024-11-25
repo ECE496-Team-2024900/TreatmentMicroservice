@@ -17,13 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from treatmentserver import views
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
-    path('/get_video_call_id', views.get_video_call_id),
-    path('/add_video_call_id', views.add_video_call_id),
-    path('get_session_info', views.get_session_info),
-    path('set_pain_score_and_session_complete', views.set_pain_score_and_session_complete)
+    path('treatment/get_session_info', views.get_session_info),
+    path('treatment/parameters/set', views.set_treatment_parameters),
+    path('treatment/parameters/prev', views.get_prev_treatment),
+    path('treatment/parameters/get', views.get_treatment_parameters),
+    path('treatment/get_video_call_id', views.get_video_call_id),
+    path('treatment/add_video_call_id', views.add_video_call_id),
+    path('treatment/remove_video_call_id', views.remove_video_call_id),
+    path('treatment/set_pain_score_and_session_complete', views.set_pain_score_and_session_complete)
 ]
