@@ -2,12 +2,13 @@ import uuid
 import json
 from sys import exception
 from django.http import JsonResponse
+from django.shortcuts import render
+from rest_framework.decorators import api_view
 import base64
 from rest_framework.decorators import api_view
 from . import settings
 from .models import TreatmentSession, Wounds
 from django.core.files.base import ContentFile
-from django.shortcuts import render
 from datetime import datetime
 from django.forms.models import model_to_dict
 import boto3
@@ -31,7 +32,7 @@ def set_treatment_parameters(request):
         return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
     try:
         updated_parameters = json.loads(request.body)
-        TreatmentSession.objects.filter(pk=treatment_id).update(**updated_parameters)
+        TreatmentSessions.objects.filter(pk=treatment_id).update(**updated_parameters)
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse({'message':'Requested changes were successfully made'}, status=200)
@@ -46,7 +47,7 @@ def get_prev_treatment(request):
         return JsonResponse({'message':'Please provide a patient ID and date.'}, status=400)
     try:
         treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
-        sorted_prev_treatments = TreatmentSession.objects.filter(
+        sorted_prev_treatments = TreatmentSessions.objects.filter(
                                     wound__patient_id=patient_id,
                                     date_scheduled__lt=treatment_date
                                 ).order_by('-date_scheduled')
@@ -68,7 +69,7 @@ def get_treatment_parameters(request):
         return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
     try:
         treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
-        treatment = TreatmentSession.objects.filter(pk=treatment_id)
+        treatment = TreatmentSessions.objects.filter(pk=treatment_id)
 
         if treatment is None:
             return JsonResponse({'message': 'No treatment found for the given ID.'}, status=204)
@@ -148,7 +149,23 @@ def get_session_info(request):
         return JsonResponse({
             "session_number": str(obj.session_number),
             "date": str(obj.date_scheduled),
-            "time": str(obj.start_time_scheduled)
+            "time": str(obj.start_time_scheduled),
+            "completed": str(obj.completed)
         })
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+# Store updated parameters
+# Expects a JSON body with key-value pairs that denote fields to update and the updated value
+# Expects a treatment ID
+@api_view(['PUT'])
+def set_pain_score_and_session_complete(request):
+    treatment_id = request.GET.get('id', None)
+    if treatment_id is None:
+        return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
+    try:
+        updated_fields = json.loads(request.body)
+        TreatmentSessions.objects.filter(pk=treatment_id).update(**updated_fields)
+        return JsonResponse({'message':'Updated fields successfully'}, status=200)
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
