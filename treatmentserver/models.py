@@ -9,9 +9,19 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import User
 
+class Wounds(models.Model):
+    patient_id = models.IntegerField()
+    clinician_id = models.IntegerField()
+    device_id = models.CharField()
+    treated = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = 'wounds'
+
 class TreatmentSessions(models.Model):
     notes = models.CharField(blank=True, null=True)
-    wound = models.ForeignKey('Wounds', models.DO_NOTHING)
+    wound = models.ForeignKey(Wounds, models.DO_NOTHING)
     status_of_device = models.CharField(blank=True, null=True)
     drug_volume_required = models.FloatField(blank=True, null=True)
     laser_power_required = models.FloatField(blank=True, null=True)
@@ -45,14 +55,3 @@ class TreatmentSessions(models.Model):
     class Meta:
         managed = False
         db_table = 'treatment_sessions'
-
-
-class Wounds(models.Model):
-    patient_id = models.IntegerField()
-    clinician_id = models.IntegerField()
-    device_id = models.CharField()
-    treated = models.BooleanField()
-
-    class Meta:
-        managed = False
-        db_table = 'wounds'
