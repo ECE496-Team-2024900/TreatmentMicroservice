@@ -22,6 +22,7 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
+    path('treatment/get_session_info', views.get_session_info),
     path('treatment/parameters/set', views.set_treatment_parameters),
     path('treatment/parameters/prev', views.get_prev_treatment),
     path('treatment/parameters/get', views.get_treatment_parameters),
@@ -30,4 +31,6 @@ urlpatterns = [
     path('treatment/remove_video_call_id', views.remove_video_call_id),
     path('treatment/get_all_treatments', views.get_all_treatments),
     path('treatment/get_all_wounds', views.get_all_wounds),
+    path('treatment/set_pain_score_and_session_complete', views.set_pain_score_and_session_complete),
+    path('treatment/add_image', views.add_images)
 ]

@@ -1,13 +1,23 @@
-from sys import exception
+import uuid
 import json
-
 from django.core.serializers import serialize
+from .models import TreatmentSessions, Wounds
+from sys import exception
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from .models import TreatmentSessions, Wounds
+import base64
+from . import settings
+from django.core.files.base import ContentFile
 from datetime import datetime
 from django.forms.models import model_to_dict
+import boto3
+
+s3 = boto3.client(
+   "s3",
+   aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+   aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+)
 
 def index(request):
     return JsonResponse({"message": "This is the treatment microservice"})
@@ -22,7 +32,7 @@ def set_treatment_parameters(request):
         return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
     try:
         updated_parameters = json.loads(request.body)
-        TreatmentSession.objects.filter(pk=treatment_id).update(**updated_parameters)
+        TreatmentSessions.objects.filter(pk=treatment_id).update(**updated_parameters)
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse({'message':'Requested changes were successfully made'}, status=200)
@@ -37,7 +47,7 @@ def get_prev_treatment(request):
         return JsonResponse({'message':'Please provide a patient ID and date.'}, status=400)
     try:
         treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
-        sorted_prev_treatments = TreatmentSession.objects.filter(
+        sorted_prev_treatments = TreatmentSessions.objects.filter(
                                     wound__patient_id=patient_id,
                                     date_scheduled__lt=treatment_date
                                 ).order_by('-date_scheduled')
@@ -59,7 +69,7 @@ def get_treatment_parameters(request):
         return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
     try:
         treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
-        treatment = TreatmentSession.objects.filter(pk=treatment_id)
+        treatment = TreatmentSessions.objects.filter(pk=treatment_id)
 
         if treatment is None:
             return JsonResponse({'message': 'No treatment found for the given ID.'}, status=204)
@@ -95,8 +105,8 @@ def get_video_call_id(request):
 
 @api_view(['PUT'])
 def remove_video_call_id(request):
-    req = json.loads(request.body.decode('utf-8'))
     try:
+        req = json.loads(request.body.decode('utf-8'))
         obj = TreatmentSessions.objects.get(id=req['id'])
         if (obj is not None):
             obj.video_call_id = None
@@ -118,6 +128,26 @@ def get_all_treatments(request):
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
+@api_view(['PUT'])
+def add_images(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        image_64_decode = base64.urlsafe_b64decode(req["image"])
+        image_id = uuid.uuid4()
+        image_name = 'image-{id}.jpg'.format(id=image_id)
+        image_result = ContentFile(image_64_decode, image_name)
+        s3.upload_fileobj(image_result, settings.AWS_STORAGE_BUCKET_NAME, image_name)
+        obj = TreatmentSessions.objects.get(id=req["id"])
+        if (obj is not None):
+            if (obj.image_urls is None):
+                obj.image_urls = []
+            obj.image_urls.append(f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{image_name}")
+            obj.save()
+            return JsonResponse({"message": "Image saved successfully"}, status=200)
+        else:
+            return JsonResponse({"message": "Image could not be saved"}, status=404)
+
+
 @api_view(['GET'])
 def get_all_wounds(request):
     try:
@@ -128,3 +158,35 @@ def get_all_wounds(request):
             return JsonResponse({"message": "No treatment sessions exist"}, status=404)
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_session_info(request):
+    treatment_id = request.GET.get("id")
+    try:
+        obj = TreatmentSessions.objects.get(id=treatment_id)
+        if obj is None:
+            return JsonResponse({"message": "Treatment session id not found"}, status=400)
+        
+        return JsonResponse({
+            "session_number": str(obj.session_number),
+            "date": str(obj.date_scheduled),
+            "time": str(obj.start_time_scheduled),
+            "completed": str(obj.completed)
+        })
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+# Store updated parameters
+# Expects a JSON body with key-value pairs that denote fields to update and the updated value
+# Expects a treatment ID
+@api_view(['PUT'])
+def set_pain_score_and_session_complete(request):
+    treatment_id = request.GET.get('id', None)
+    if treatment_id is None:
+        return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
+    try:
+        updated_fields = json.loads(request.body)
+        TreatmentSessions.objects.filter(pk=treatment_id).update(**updated_fields)
+        return JsonResponse({'message':'Updated fields successfully'}, status=200)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
