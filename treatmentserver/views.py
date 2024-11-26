@@ -146,6 +146,8 @@ def add_images(request):
             return JsonResponse({"message": "Image saved successfully"}, status=200)
         else:
             return JsonResponse({"message": "Image could not be saved"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
 
 
 @api_view(['GET'])
