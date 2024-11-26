@@ -190,3 +190,24 @@ def set_pain_score_and_session_complete(request):
         return JsonResponse({'message':'Updated fields successfully'}, status=200)
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['GET'])
+def get_treatment_timer(request, treatment_id):
+    try:
+        # Fetch the treatment session using the provided treatment ID
+        treatment_session = TreatmentSessions.objects.get(id=treatment_id)
+
+        # Get the relevant timer values, defaulting to 5 minutes (15 seconds) if they are None
+        drug_timer = treatment_session.estimated_duration_for_drug_administration or 15
+        light_timer = treatment_session.estimated_duration_for_light_administration or 15
+        wash_timer = treatment_session.estimated_duration_for_wash_administration or 15
+
+        # Return the timers as a JSON response
+        return JsonResponse({
+            "drug_timer": drug_timer,
+            "light_timer": light_timer,
+            "wash_timer": wash_timer
+        }, status=200)
+
+    except TreatmentSessions.DoesNotExist:
+        return JsonResponse({"message": "Treatment session not found"}, status=404)
