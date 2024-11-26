@@ -23,5 +23,5 @@ urlpatterns = [
     path('', views.index),
     path('treatment/get_video_call_id', views.get_video_call_id),
     path('treatment/add_video_call_id', views.add_video_call_id),
-    path('treatment/timer/<int:treatment_id>/', views.get_treatment_timer, name='get-treatment-timer')
+    path('treatment/timer/<int:treatment_id>', views.get_treatment_timer, name='get-treatment-timer')
 ]
