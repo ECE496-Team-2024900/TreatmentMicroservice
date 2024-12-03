@@ -161,6 +161,19 @@ def get_all_wounds(request):
         return JsonResponse({"message": str(e)}, status=500)
 
 @api_view(['GET'])
+def get_patient_wounds(request):
+    patient_id = request.GET.get('id', None)
+    if patient_id is None:
+        return JsonResponse({'message':'Please provide a patient ID'}, status=400)
+    try:
+        wounds = Wounds.objects.filter(patient_id=patient_id).values_list('id', flat=True)
+        if (wounds is None):
+            return JsonResponse({"message": "No wounds exist for this patient"}, status=204)
+        return JsonResponse({"message": list(wounds)}, status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['GET'])
 def get_session_info(request):
     treatment_id = request.GET.get("id")
     try:
