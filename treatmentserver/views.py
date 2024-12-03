@@ -167,8 +167,6 @@ def get_patient_wounds(request):
         return JsonResponse({'message':'Please provide a patient ID'}, status=400)
     try:
         wounds = Wounds.objects.filter(patient_id=patient_id).values_list('id', flat=True)
-        if (wounds is None):
-            return JsonResponse({"message": "No wounds exist for this patient"}, status=204)
         return JsonResponse({"message": list(wounds)}, status=200)
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
