@@ -1,7 +1,7 @@
 CREATE TABLE "wounds" (
   "id" SERIAL PRIMARY KEY,
   "patient_id" integer NOT NULL,
-  "clinician_id" integer NOT NULL,
+  "clinician_id" varchar NOT NULL,
   "device_id" varchar NOT NULL,
   "treated" boolean NOT NULL DEFAULT false
 );
