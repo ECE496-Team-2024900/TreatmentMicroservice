@@ -11,9 +11,12 @@ from django.contrib.auth.models import User
 
 class Wounds(models.Model):
     patient_id = models.IntegerField()
-    clinician_id = models.IntegerField()
+    clinician_id = models.CharField()
     device_id = models.CharField()
     treated = models.BooleanField()
+    date_added = models.DateField(blank=True, null=True)
+    infection_type = models.CharField(blank=True, null=True)
+    infection_location = models.CharField(blank=True, null=True)
 
     class Meta:
         managed = False

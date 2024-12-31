@@ -161,6 +161,20 @@ def add_images(request):
 
 
 @api_view(['GET'])
+def get_wound(request):
+    wound_id = request.GET.get('id', None)
+    if wound_id is None:
+        return JsonResponse({'message':'Please provide a wound ID'}, status=400)
+    try:
+        wound = Wounds.objects.filter(pk=wound_id).first()
+        if wound is None:
+            return JsonResponse({'message': 'No wound found for the given ID.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+    return JsonResponse({'message': model_to_dict(wound)}, status=200)
+
+
+@api_view(['GET'])
 def get_all_wounds(request):
     try:
         obj = Wounds.objects.all()

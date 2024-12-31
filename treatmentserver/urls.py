@@ -31,6 +31,7 @@ urlpatterns = [
     path('treatment/remove_video_call_id', views.remove_video_call_id),
     path('treatment/get_all_treatments', views.get_all_treatments),
     path('treatment/get_all_wounds', views.get_all_wounds),
+    path('treatment/get_wound', views.get_wound),
     path('treatment/set_pain_score_and_session_complete', views.set_pain_score_and_session_complete),
     path('treatment/get_all_images_for_wound', views.get_all_images_for_wound),
     path('treatment/add_image', views.add_images),
