@@ -129,7 +129,7 @@ def get_all_treatments(request):
         return JsonResponse({"message": str(e)}, status=500)
 
 @api_view(['GET'])
-def get_all_images_for_a_wound(request):
+def get_all_images_for_wound(request):
     try:
         obj = TreatmentSessions.objects.filter(wound=request.GET.get('wound')).values("image_urls")
         if (obj is not None):
