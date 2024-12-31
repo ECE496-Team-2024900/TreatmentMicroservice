@@ -68,8 +68,7 @@ def get_treatment_parameters(request):
     if treatment_id is None:
         return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
     try:
-        treatment_date = datetime.strptime(treatment_date, '%Y-%m-%d').date()
-        treatment = TreatmentSessions.objects.filter(pk=treatment_id)
+        treatment = TreatmentSessions.objects.filter(pk=treatment_id).first()
 
         if treatment is None:
             return JsonResponse({'message': 'No treatment found for the given ID.'}, status=204)
