@@ -61,12 +61,20 @@ def get_prev_treatment(request):
     return JsonResponse(model_to_dict(prev_treatment), status=200)
 
 # Retrieves all of a patient's past treatments ordered from most to least recent for a wound
-# Expects a patient ID
+# Expects a patient ID and wound ID
+
+# Response HTTP status values:
+# - 200 = past treatments returned
+# - 204 = no error, but no treatments exist for this patient and wound
+# - 500 = error encountered
 @api_view(['GET'])
 def get_past_patient_treatments(request):
     try:
+        # Retrieving request parameters
         patient_id = request.GET.get('patient_id', None)
         wound_id = request.GET.get('wound_id', None)
+
+        # Fetching past treatments from DB
         sorted_past_patient_treatments = TreatmentSessions.objects.filter(
                                     wound_id=wound_id,
                                     wound__patient_id=patient_id,
