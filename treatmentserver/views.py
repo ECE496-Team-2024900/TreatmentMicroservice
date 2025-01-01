@@ -161,11 +161,17 @@ def get_all_wounds(request):
         return JsonResponse({"message": str(e)}, status=500)
 
 @api_view(['GET'])
+# Retrieves a list of the patient's wounds
+# Expects a patient ID
 def get_patient_wounds(request):
+    # Parsing request parameters
     patient_id = request.GET.get('id', None)
+
+    # Handling case of no patient ID found
     if patient_id is None:
         return JsonResponse({'message':'Please provide a patient ID'}, status=400)
     try:
+       # Retrieving wounds from DB
         wounds = Wounds.objects.filter(patient_id=patient_id).values_list('id', flat=True)
         return JsonResponse({"message": list(wounds)}, status=200)
     except Exception as e:
