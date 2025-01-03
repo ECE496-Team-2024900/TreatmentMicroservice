@@ -212,3 +212,26 @@ def get_treatment_timer(request, treatment_id):
 
     except TreatmentSessions.DoesNotExist:
         return JsonResponse({"message": "Treatment session not found"}, status=404)
+
+# Retrieves list of all wounds associated to a patient
+# Expects the patient MRN number
+@api_view(['GET'])
+def get_all_wounds_given_patient(request):
+
+    # Get the provided patient MRN number
+    mrn = request.GET.get('mrn', None)
+    if mrn is None:
+        return JsonResponse({'message':'Please provide an MRN number'}, status=400)
+    
+    # Try finding all wound records having the given MRN number as patient_id
+    try:
+        wounds = Wounds.objects.filter(patient_id=mrn).order_by('treated')  # Sort by treated (False first)
+
+        # Return list of wounds if any are found
+        if (wounds is not None):
+            return JsonResponse({"message": list(wounds.values())}, status=200)
+        else:
+            return JsonResponse({"message": "No wounds exist for the given patient"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
