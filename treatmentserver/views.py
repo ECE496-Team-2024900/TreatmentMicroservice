@@ -1,7 +1,7 @@
 import uuid
 import json
 from django.core.serializers import serialize
-from .models import TreatmentSessions, Wounds
+from .models import TreatmentSessions, Wounds, Reports
 from sys import exception
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -12,6 +12,7 @@ from django.core.files.base import ContentFile
 from datetime import datetime
 from django.forms.models import model_to_dict
 import boto3
+from django.shortcuts import get_object_or_404
 
 s3 = boto3.client(
    "s3",
@@ -212,3 +213,37 @@ def get_treatment_timer(request, treatment_id):
 
     except TreatmentSessions.DoesNotExist:
         return JsonResponse({"message": "Treatment session not found"}, status=404)
+
+@api_view(["PUT"])
+def add_report(request):
+    try:
+        # Fetch query parameter
+        treatment_id = request.GET.get('id')
+
+        # Check to ensure this treatment exists
+        treatment = get_object_or_404(TreatmentSessions, id=treatment_id)
+        
+        # Parse the request body to get the report data
+        report_data = json.loads(request.body)
+
+        # Create the new report in the DB
+        report = Reports.objects.create(treatment_id=treatment_id, report_data=report_data)
+        return JsonResponse({"message": "Report added successfully"}, status=201)
+
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+
+# Retrieve the report for a specific treatment session
+@api_view(["GET"])
+def get_report(request):
+    try:
+        # Fetch query parameter
+        treatment_id = request.GET.get('id')
+
+        # Fetch the report object
+        report = Reports.objects.get(treatment_id=treatment_id)
+
+        return JsonResponse(model_to_dict(report), status=200)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
