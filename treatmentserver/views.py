@@ -160,14 +160,22 @@ def get_all_wounds(request):
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
+# Retrieve treatment session info given a treatment id
+# Expects a treatment id to be passed in
+# Returns a json with keys and values corresponding to the treatment session fields
 @api_view(['GET'])
 def get_session_info(request):
+    # Get the treatment id parameter passed in
     treatment_id = request.GET.get("id")
     try:
+        # Filter by id to find the required treatment session record
         obj = TreatmentSessions.objects.get(id=treatment_id)
+
+        # No record found with the specified id
         if obj is None:
             return JsonResponse({"message": "Treatment session id not found"}, status=400)
         
+        # Return a json with the following fields and their values
         return JsonResponse({
             "session_number": str(obj.session_number),
             "date": str(obj.date_scheduled),
@@ -180,12 +188,18 @@ def get_session_info(request):
 # Store updated parameters
 # Expects a JSON body with key-value pairs that denote fields to update and the updated value
 # Expects a treatment ID
+# Returns a success or error message
 @api_view(['PUT'])
 def set_pain_score_and_session_complete(request):
+    # Get the treatment id parameter passed in
     treatment_id = request.GET.get('id', None)
+
+    # No treatment id provided - cannot update any record
     if treatment_id is None:
         return JsonResponse({'message':'Please provide a treatment ID'}, status=400)
     try:
+        # Filter by the treatment id to find the required treatment session record 
+        # and update it using the new field values that were passed in as the request body
         updated_fields = json.loads(request.body)
         TreatmentSessions.objects.filter(pk=treatment_id).update(**updated_fields)
         return JsonResponse({'message':'Updated fields successfully'}, status=200)
