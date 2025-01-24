@@ -34,5 +34,5 @@ urlpatterns = [
     path('treatment/set_pain_score_and_session_complete', views.set_pain_score_and_session_complete),
     path('treatment/add_image', views.add_images),
     path('treatment/timer/<int:treatment_id>/', views.get_treatment_timer, name='get-treatment-timer'),
-    path('treatment/get_past_patient_treatments', views.get_past_patient_treatments)
+    path('treatment/get_treatments', views.get_treatments)
 ]

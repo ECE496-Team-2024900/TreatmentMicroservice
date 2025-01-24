@@ -60,7 +60,7 @@ def get_prev_treatment(request):
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse(model_to_dict(prev_treatment), status=200)
 
-# Retrieves all of a patient's past treatments ordered from most to least recent for a wound
+# Retrieves all of a patient's treatments ordered from most to least recent for a wound
 # Expects a patient ID and wound ID
 
 # Response HTTP status values:
@@ -68,7 +68,7 @@ def get_prev_treatment(request):
 # - 204 = no error, but no treatments exist for this patient and wound
 # - 500 = error encountered
 @api_view(['GET'])
-def get_past_patient_treatments(request):
+def get_treatments(request):
     try:
         # Retrieving request parameters
         patient_id = request.GET.get('patient_id', None)
@@ -77,15 +77,14 @@ def get_past_patient_treatments(request):
         # Fetching past treatments from DB
         sorted_past_patient_treatments = TreatmentSessions.objects.filter(
                                     wound_id=wound_id,
-                                    wound__patient_id=patient_id,
-                                    completed=True,
+                                    wound__patient_id=patient_id
                                 ).order_by('-date_scheduled')
         
         if sorted_past_patient_treatments.exists():
             return JsonResponse(list(sorted_past_patient_treatments.values('session_number', 'date_scheduled', 'start_time')), safe=False, status=200)
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
-    return JsonResponse({'message': 'No past treatments found for the given patient and wound.'}, status=204)
+    return JsonResponse({'message': 'No treatments found for the given patient and wound.'}, status=204)
 
 @api_view(['GET'])
 def get_treatment_parameters(request):
