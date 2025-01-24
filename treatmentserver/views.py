@@ -161,6 +161,27 @@ def get_all_wounds(request):
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
+# Get wound information for a wound ID
+# Expects a wound ID query parameter
+# Returns all information for that wound
+@api_view(['GET'])
+def get_wound_info(request):
+    try:
+        # Retrieve wound ID from query parameters
+        wound_id = request.GET.get("id")
+
+        # Find wound based on ID
+        obj = Wounds.objects.get(id=wound_id)
+
+        # Return wound information, if it exists
+        if (obj is not None):
+            return JsonResponse({"message": model_to_dict(obj)}, status=200)
+        else:
+            return JsonResponse({"message": "No wound information found"}, status=404)
+    except Exception as e:
+        # Internal server error handling
+        return JsonResponse({"message": str(e)}, status=500)
+
 @api_view(['GET'])
 def get_session_info(request):
     treatment_id = request.GET.get("id")
