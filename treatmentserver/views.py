@@ -235,3 +235,38 @@ def get_all_wounds_given_patient(request):
 
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
+    
+# Creates a new wound record in database
+# Expects a JSON body with key-value pairs that denote the fields and their values
+# Fields/keys required in JSON: infection_type, infection_location, device_id, patient_id, clinician_id, treated, date_added
+# Returns a success or error message
+@api_view(['PUT'])
+def create_wound(request):
+    try:
+        body = json.loads(request.body)
+        
+        # Extract fields
+        required_fields = ["infection_type", "infection_location", "device_id", "patient_id", "clinician_id", "treated", "date_added"]
+        missing_fields = [field for field in required_fields if field not in body]
+        
+        if missing_fields:
+            return JsonResponse({"message": f"Missing required fields: {', '.join(missing_fields)}"}, status=400)
+
+        # Create and save the wound record
+        new_wound = Wounds(
+            infection_type=body['infection_type'],
+            infection_location=body['infection_location'],
+            device_id=body['device_id'],
+            patient_id=body['patient_id'],
+            clinician_id=body['clinician_id'],
+            treated=body['treated'],
+            date_added=body['date_added']
+        )
+        new_wound.save()
+
+        return JsonResponse({"message": "Wound record created successfully"}, status=200)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"message": "Invalid JSON body"}, status=400)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
