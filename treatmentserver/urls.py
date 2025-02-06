@@ -35,4 +35,5 @@ urlpatterns = [
     path('treatment/add_image', views.add_images),
     path('treatment/timer/<int:treatment_id>/', views.get_treatment_timer, name='get-treatment-timer'),
     path('treatment/get_patient_wounds', views.get_patient_wounds)
+    path('treatment/get_treatments', views.get_treatments)
 ]
