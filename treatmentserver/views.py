@@ -60,31 +60,33 @@ def get_prev_treatment(request):
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse(model_to_dict(prev_treatment), status=200)
 
-# Retrieves all of a patient's treatments ordered from most to least recent for a wound
-# Expects a patient ID and wound ID
+# Retrieves treatments meeting specified criteria ordered from most to least recent
+# Expects a body that contains fields and their assignments to filter by
+# If a body isn't provided, function will still work, but recommended to use the get_all_treatments method
 
 # Response HTTP status values:
-# - 200 = past treatments returned
-# - 204 = no error, but no treatments exist for this patient and wound
+# - 200 = treatments returned
+# - 204 = no error, but no treatments exist meeting this criteria
 # - 500 = error encountered
-@api_view(['GET'])
+@api_view(['PUT'])
 def get_treatments(request):
     try:
-        # Retrieving request parameters
-        patient_id = request.GET.get('patient_id', None)
-        wound_id = request.GET.get('wound_id', None)
+        filters = json.loads(request.body)
 
-        # Fetching past treatments from DB
-        sorted_past_patient_treatments = TreatmentSessions.objects.filter(
-                                    wound_id=wound_id,
-                                    wound__patient_id=patient_id
-                                ).order_by('-date_scheduled')
-        
-        if sorted_past_patient_treatments.exists():
-            return JsonResponse(list(sorted_past_patient_treatments.values('session_number', 'date_scheduled', 'start_time')), safe=False, status=200)
+        # Adding filter if patient_id asked for, as this requires traversing the foreign key relationship
+        if 'patient_id' in filters:
+            patient_id = filters.pop('patient_id')
+            filters['wound__patient_id'] = patient_id
+
+        # Fetching treatments from DB
+        sorted_patient_treatments = TreatmentSessions.objects.filter(**filters).order_by('-date_scheduled')
+
+        if sorted_patient_treatments.exists():
+            return JsonResponse(list(sorted_patient_treatments), safe=False, status=200)
     except Exception as e:
-        return JsonResponse({'message':str(e)}, status=500)
-    return JsonResponse({'message': 'No treatments found for the given patient and wound.'}, status=204)
+        return JsonResponse({'message': str(e)}, status=500)
+
+    return JsonResponse({'message': 'No treatments found.'}, status=204)
 
 @api_view(['GET'])
 def get_treatment_parameters(request):
@@ -184,25 +186,25 @@ def get_all_wounds(request):
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
-# Retrieve treatment session info given a treatment id
-# Expects a treatment id to be passed in
-# Returns a json with keys and values corresponding to the treatment session fields
-@api_view(['GET'])
-# Retrieves a list of the patient's wounds
-# Expects a patient ID
-def get_patient_wounds(request):
-    # Parsing request parameters
-    patient_id = request.GET.get('id', None)
-
-    # Handling case of no patient ID found
-    if patient_id is None:
-        return JsonResponse({'message':'Please provide a patient ID'}, status=400)
+# Retrieves wounds meeting specified criteria
+# Expects a body that contains fields and their assignments to filter by
+# If a body isn't provided, function will still work, but recommended to use the get_all_wounds method
+@api_view(['POST'])
+# Response HTTP status values:
+# - 200 = wounds returned
+# - 204 = no error, but no wounds exist meeting this criteria
+# - 500 = error encountered
+def get_wounds(request):
     try:
-       # Retrieving wounds from DB
-        wounds = Wounds.objects.filter(patient_id=patient_id).values_list('id', flat=True)
-        return JsonResponse({"message": list(wounds)}, status=200)
+        filters = json.loads(request.body)
+
+        # Fetching wounds from DB
+        wounds = Wounds.objects.filter(**filters)
+        return JsonResponse(list(wounds), status=200)
     except Exception as e:
-        return JsonResponse({"message": str(e)}, status=500)
+        return JsonResponse({'message': str(e)}, status=500)
+
+    return JsonResponse({'message': 'No wounds found.'}, status=204)
 
 @api_view(['GET'])
 def get_session_info(request):
