@@ -68,7 +68,7 @@ def get_prev_treatment(request):
 # - 200 = treatments returned
 # - 204 = no error, but no treatments exist meeting this criteria
 # - 500 = error encountered
-@api_view(['PUT'])
+@api_view(['POST'])
 def get_treatments(request):
     try:
         filters = json.loads(request.body)
@@ -82,7 +82,7 @@ def get_treatments(request):
         sorted_patient_treatments = TreatmentSessions.objects.filter(**filters).order_by('-date_scheduled')
 
         if sorted_patient_treatments.exists():
-            return JsonResponse(list(sorted_patient_treatments), safe=False, status=200)
+            return JsonResponse(list(sorted_patient_treatments.values()), safe=False, status=200)
     except Exception as e:
         return JsonResponse({'message': str(e)}, status=500)
 
@@ -200,10 +200,10 @@ def get_wounds(request):
 
         # Fetching wounds from DB
         wounds = Wounds.objects.filter(**filters)
-        return JsonResponse(list(wounds), status=200)
+        if wounds.exists():
+            return JsonResponse(list(wounds.values()), safe=False, status=200)
     except Exception as e:
         return JsonResponse({'message': str(e)}, status=500)
-
     return JsonResponse({'message': 'No wounds found.'}, status=204)
 
 @api_view(['GET'])
