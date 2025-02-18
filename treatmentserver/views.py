@@ -213,28 +213,25 @@ def get_treatment_timer(request, treatment_id):
     except TreatmentSessions.DoesNotExist:
         return JsonResponse({"message": "Treatment session not found"}, status=404)
 
-# Retrieves list of all wounds associated to a patient
-# Expects the patient MRN number
-@api_view(['GET'])
-def get_all_wounds_given_patient(request):
-
-    # Get the provided patient MRN number
-    mrn = request.GET.get('mrn', None)
-    if mrn is None:
-        return JsonResponse({'message':'Please provide an MRN number'}, status=400)
-    
-    # Try finding all wound records having the given MRN number as patient_id
+# Retrieves wounds meeting specified criteria
+# Expects a body that contains fields and their assignments to filter by
+# If a body isn't provided, function will still work, but recommended to use the get_all_wounds method
+@api_view(['POST'])
+# Response HTTP status values:
+# - 200 = wounds returned
+# - 204 = no error, but no wounds exist meeting this criteria
+# - 500 = error encountered
+def get_wounds(request):
     try:
-        wounds = Wounds.objects.filter(patient_id=mrn).order_by('treated')  # Sort by treated (False first)
+        filters = json.loads(request.body)
 
-        # Return list of wounds if any are found
-        if (wounds is not None):
-            return JsonResponse({"message": list(wounds.values())}, status=200)
-        else:
-            return JsonResponse({"message": "No wounds exist for the given patient"}, status=404)
-
+        # Fetching wounds from DB
+        wounds = Wounds.objects.filter(**filters)
+        if wounds.exists():
+            return JsonResponse(list(wounds.values()), safe=False, status=200)
     except Exception as e:
-        return JsonResponse({'message':str(e)}, status=500)
+        return JsonResponse({'message': str(e)}, status=500)
+    return JsonResponse({'message': 'No wounds found.'}, status=204)
     
 # Creates a new wound record in database
 # Expects a JSON body with key-value pairs that denote the fields and their values
