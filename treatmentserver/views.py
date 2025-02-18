@@ -312,7 +312,7 @@ def request_reschedule(request):
         req = json.loads(request.body.decode('utf-8'))
         obj = TreatmentSessions.objects.get(id=req['id'])
         if (obj is not None):
-            obj.request_reschedule = req['request_reschedule']
+            obj.reschedule_requested = req['reschedule_requested']
             obj.save()
             return JsonResponse({"message": "Treatment session modified successfully"}, status=200)
         else:
