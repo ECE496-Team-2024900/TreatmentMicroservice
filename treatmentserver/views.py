@@ -12,6 +12,12 @@ from django.core.files.base import ContentFile
 from datetime import datetime
 from django.forms.models import model_to_dict
 import boto3
+from twilio.rest import Client
+import smtplib, ssl
+port = 465
+password = settings.GMAIL_PASSWORD
+email = settings.GMAIL_EMAIL
+context = ssl.create_default_context()
 
 s3 = boto3.client(
    "s3",
@@ -290,3 +296,60 @@ def get_all_wounds_given_patient(request):
 
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['POST'])
+def add_treatment(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        TreatmentSessions.objects.create(**req)
+        return JsonResponse({"message": "Treatment added successfully"}, status=201)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['PUT'])
+def request_reschedule(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        obj = TreatmentSessions.objects.get(id=req['id'])
+        if (obj is not None):
+            obj.request_reschedule = req['request_reschedule']
+            obj.save()
+            return JsonResponse({"message": "Treatment session modified successfully"}, status=200)
+        else:
+            return JsonResponse({"message": "Treatment session not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['POST'])
+def send_email(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
+            server.login(email, password)
+            server.sendmail(email, req.email, req.message)
+        return JsonResponse({"message": "email sent successfully"}, status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['POST'])
+def send_message(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        message = client.messages.create(
+            body=req.messsage,
+            from_="+15416128222",
+            to="+1"+req.phone_number,
+        )
+        return JsonResponse({"message": "message sent successfully"}, status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['DELETE'])
+def cancel_treatment(request):
+    try:
+        treatment_id = request.GET.get('id', None)
+        TreatmentSessions.objects.get(id=treatment_id).delete()
+        return JsonResponse({"message": "Treatment session deleted"}, status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)

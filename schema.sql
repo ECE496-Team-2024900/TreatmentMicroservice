@@ -46,3 +46,6 @@ ADD "video_call_id" varchar;
 
 ALTER TABLE "treatment_sessions"
 ADD "image_urls" varchar[];
+
+ALTER TABLE "treatment_sessions"
+ADD "reschedule_requested" boolean DEFAULT false;
