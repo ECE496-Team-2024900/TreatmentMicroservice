@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 
 class Wounds(models.Model):
     patient_id = models.IntegerField()
-    clinician_id = models.IntegerField()
+    clinician_id = models.CharField()
     device_id = models.CharField()
     treated = models.BooleanField()
 
