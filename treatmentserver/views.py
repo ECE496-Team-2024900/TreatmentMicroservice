@@ -245,7 +245,7 @@ def add_report(request):
         treatment = get_object_or_404(TreatmentSessions, id=treatment_id)
         
         # Parse the request body to get the report data
-        report_data = json.loads(request.body)
+        report_data = json.loads(request.body)["fileData"]
 
         # Create the new report in the DB
         report = Reports.objects.create(treatment_id=treatment_id, report_data=report_data)
