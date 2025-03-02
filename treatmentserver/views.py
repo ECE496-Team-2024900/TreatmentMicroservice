@@ -151,6 +151,17 @@ def get_all_treatments(request):
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
+@api_view(['GET'])
+def get_all_images_for_wound(request):
+    try:
+        obj = TreatmentSessions.objects.filter(wound=request.GET.get('wound')).values("id","image_urls")
+        if (obj is not None):
+            return JsonResponse({"message": list(obj)}, status=200)
+        else:
+            return JsonResponse({"message": "No images exist"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
 @api_view(['PUT'])
 def add_images(request):
     try:
@@ -171,6 +182,20 @@ def add_images(request):
             return JsonResponse({"message": "Image could not be saved"}, status=404)
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
+
+
+@api_view(['GET'])
+def get_wound(request):
+    wound_id = request.GET.get('id', None)
+    if wound_id is None:
+        return JsonResponse({'message':'Please provide a wound ID'}, status=400)
+    try:
+        wound = Wounds.objects.filter(pk=wound_id).first()
+        if wound is None:
+            return JsonResponse({'message': 'No wound found for the given ID.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+    return JsonResponse({'message': model_to_dict(wound)}, status=200)
 
 
 @api_view(['GET'])
