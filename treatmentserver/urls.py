@@ -39,5 +39,7 @@ urlpatterns = [
     path('treatment/get_wounds', views.get_wounds),
     path('treatment/create_wound', views.create_wound),
     path('treatment/get_patient_wounds', views.get_patient_wounds),
-    path('treatment/get_treatments', views.get_treatments)
+    path('treatment/get_treatments', views.get_treatments),
+    path('treatment/update_wound_status', views.update_wound_status, name="update_wound_status"),
+
 ]
