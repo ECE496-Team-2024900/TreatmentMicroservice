@@ -322,3 +322,12 @@ def cancel_treatment(request):
         return JsonResponse({"message": "Treatment session deleted"}, status=200)
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_wound(request):
+    try:
+        wound_id = request.GET.get('id', None)
+        wound = TreatmentSessions.objects.filter(pk=wound_id).first()
+        return JsonResponse(model_to_dict(wound), status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)

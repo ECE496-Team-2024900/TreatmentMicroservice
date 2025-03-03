@@ -39,5 +39,6 @@ urlpatterns = [
     path('treatment/get_all_wounds_given_patient', views.get_all_wounds_given_patient),
     path('treatment/add_treatment', views.add_treatment),
     path('treatment/request_reschedule', views.request_reschedule),
-    path('treatment/cancel_treatment',views.cancel_treatment)
+    path('treatment/cancel_treatment',views.cancel_treatment),
+    path('treatment/get_wound', views.get_wound)
 ]
