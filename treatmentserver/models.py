@@ -58,3 +58,12 @@ class TreatmentSessions(models.Model):
     class Meta:
         managed = False
         db_table = 'treatment_sessions'
+
+class Reports(models.Model):
+    treatment = models.ForeignKey('TreatmentSessions', on_delete=models.DO_NOTHING)
+    report_data = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = True
+        db_table = 'reports'
