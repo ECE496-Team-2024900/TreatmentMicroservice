@@ -55,3 +55,12 @@ ADD "infection_type" varchar;
 
 ALTER TABLE "wounds"
 ADD "infection_location" varchar;
+
+ALTER TABLE "wounds"
+ADD "medicine_name" varchar;
+
+ALTER TABLE "treatment_sessions"
+ADD "wound_changing" boolean;
+
+ALTER TABLE "treatment_sessions"
+ADD "medicine_lot" varchar;
