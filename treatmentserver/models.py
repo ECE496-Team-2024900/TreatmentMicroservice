@@ -54,6 +54,7 @@ class TreatmentSessions(models.Model):
     session_number = models.IntegerField()
     pain_score = models.IntegerField(blank=True, null=True)
     image_urls = ArrayField(models.CharField(), default=list)
+    reschedule_requested = models.BooleanField()
 
     class Meta:
         managed = False

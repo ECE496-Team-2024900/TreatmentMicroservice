@@ -82,7 +82,7 @@ def get_treatments(request):
                                 ).order_by('-date_scheduled')
         
         if sorted_past_patient_treatments.exists():
-            return JsonResponse(list(sorted_past_patient_treatments.values('session_number', 'date_scheduled', 'start_time')), safe=False, status=200)
+            return JsonResponse(list(sorted_past_patient_treatments.values()), safe=False, status=200)
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse({'message': 'No treatments found for the given patient and wound.'}, status=204)
