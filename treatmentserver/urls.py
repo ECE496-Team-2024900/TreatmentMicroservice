@@ -42,5 +42,9 @@ urlpatterns = [
     path('treatment/get_wounds', views.get_wounds),
     path('treatment/create_wound', views.create_wound),
     path('treatment/get_patient_wounds', views.get_patient_wounds),
-    path('treatment/get_treatments', views.get_treatments)
+    path('treatment/get_treatments', views.get_treatments),
+    path('treatment/get_all_wounds_given_patient', views.get_all_wounds_given_patient),
+    path('treatment/add_treatment', views.add_treatment),
+    path('treatment/request_reschedule', views.request_reschedule),
+    path('treatment/cancel_treatment',views.cancel_treatment)
 ]

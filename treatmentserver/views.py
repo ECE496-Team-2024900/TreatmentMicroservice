@@ -230,6 +230,8 @@ def get_wound_info(request):
     except Exception as e:
         # Internal server error handling
         return JsonResponse({"message": str(e)}, status=500)
+
+        
 # Retrieve treatment session info given a treatment id
 # Expects a treatment id to be passed in
 # Returns a json with keys and values corresponding to the treatment session fields
@@ -332,6 +334,38 @@ def add_report(request):
 
     except Exception as e:
         return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['POST'])
+def add_treatment(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        TreatmentSessions.objects.create(**req)
+        return JsonResponse({"message": "Treatment added successfully"}, status=201)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['PUT'])
+def request_reschedule(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        obj = TreatmentSessions.objects.get(id=req['id'])
+        if (obj is not None):
+            obj.reschedule_requested = req['reschedule_requested']
+            obj.save()
+            return JsonResponse({"message": "Treatment session modified successfully"}, status=200)
+        else:
+            return JsonResponse({"message": "Treatment session not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['DELETE'])
+def cancel_treatment(request):
+    try:
+        treatment_id = request.GET.get('id', None)
+        TreatmentSessions.objects.get(id=treatment_id).delete()
+        return JsonResponse({"message": "Treatment session deleted"}, status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
 
 
 # Retrieve the report for a specific treatment session
