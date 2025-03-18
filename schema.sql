@@ -49,3 +49,12 @@ ADD "image_urls" varchar[];
 
 ALTER TABLE "treatment_sessions"
 ADD "reschedule_requested" boolean DEFAULT false;
+
+ALTER TABLE "wounds"
+ADD "date_added" date;
+
+ALTER TABLE "wounds"
+ADD "infection_type" varchar;
+
+ALTER TABLE "wounds"
+ADD "infection_location" varchar;

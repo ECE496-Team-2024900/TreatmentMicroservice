@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 
 class Wounds(models.Model):
     patient_id = models.IntegerField()
-    clinician_id = models.IntegerField()
+    clinician_id = models.CharField()
     device_id = models.CharField()
     treated = models.BooleanField()
     date_added = models.DateField(blank=True, null=True)
@@ -58,3 +58,12 @@ class TreatmentSessions(models.Model):
     class Meta:
         managed = False
         db_table = 'treatment_sessions'
+
+class Reports(models.Model):
+    treatment = models.ForeignKey('TreatmentSessions', on_delete=models.DO_NOTHING)
+    report_data = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = True
+        db_table = 'reports'
