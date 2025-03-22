@@ -1,7 +1,7 @@
 import uuid
 import json
 from django.core.serializers import serialize
-from .models import TreatmentSessions, Wounds
+from .models import TreatmentSessions, Wounds, Reports
 from sys import exception
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -13,6 +13,7 @@ from datetime import datetime
 from django.forms.models import model_to_dict
 import boto3
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
 
 s3 = boto3.client(
    "s3",
@@ -237,6 +238,28 @@ def get_all_wounds(request):
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
+# Get wound information for a wound ID
+# Expects a wound ID query parameter
+# Returns all information for that wound
+@api_view(['GET'])
+def get_wound_info(request):
+    try:
+        # Retrieve wound ID from query parameters
+        wound_id = request.GET.get("id")
+
+        # Find wound based on ID
+        obj = Wounds.objects.get(id=wound_id)
+
+        # Return wound information, if it exists
+        if (obj is not None):
+            return JsonResponse({"message": model_to_dict(obj)}, status=200)
+        else:
+            return JsonResponse({"message": "No wound information found"}, status=404)
+    except Exception as e:
+        # Internal server error handling
+        return JsonResponse({"message": str(e)}, status=500)
+
+        
 # Retrieve treatment session info given a treatment id
 # Expects a treatment id to be passed in
 # Returns a json with keys and values corresponding to the treatment session fields
@@ -320,6 +343,72 @@ def get_treatment_timer(request, treatment_id):
 
     except TreatmentSessions.DoesNotExist:
         return JsonResponse({"message": "Treatment session not found"}, status=404)
+
+@api_view(["PUT"])
+def add_report(request):
+    try:
+        # Fetch query parameter
+        treatment_id = request.GET.get('id')
+
+        # Check to ensure this treatment exists
+        treatment = get_object_or_404(TreatmentSessions, id=treatment_id)
+        
+        # Parse the request body to get the report data
+        report_data = json.loads(request.body)["fileData"]
+
+        # Create the new report in the DB
+        report = Reports.objects.create(treatment_id=treatment_id, report_data=report_data)
+        return JsonResponse({"message": "Report added successfully"}, status=201)
+
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['POST'])
+def add_treatment(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        TreatmentSessions.objects.create(**req)
+        return JsonResponse({"message": "Treatment added successfully"}, status=201)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['PUT'])
+def request_reschedule(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        obj = TreatmentSessions.objects.get(id=req['id'])
+        if (obj is not None):
+            obj.reschedule_requested = req['reschedule_requested']
+            obj.save()
+            return JsonResponse({"message": "Treatment session modified successfully"}, status=200)
+        else:
+            return JsonResponse({"message": "Treatment session not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['DELETE'])
+def cancel_treatment(request):
+    try:
+        treatment_id = request.GET.get('id', None)
+        TreatmentSessions.objects.get(id=treatment_id).delete()
+        return JsonResponse({"message": "Treatment session deleted"}, status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+
+# Retrieve the report for a specific treatment session
+@api_view(["GET"])
+def get_report(request):
+    try:
+        # Fetch query parameter
+        treatment_id = request.GET.get('id')
+
+        # Fetch the report object
+        report = Reports.objects.get(treatment_id=treatment_id)
+
+        return JsonResponse(model_to_dict(report), status=200)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
 
 # Retrieves wounds meeting specified criteria
 # Expects a body that contains fields and their assignments to filter by
