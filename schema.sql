@@ -39,6 +39,15 @@ CREATE TABLE "treatment_sessions" (
   "pain_score" integer
 );
 
+CREATE TABLE "reports" (
+  "treatment_id" integer NOT NULL,
+  "report_data" jsonb NOT NULL,
+  "created_at" timestamp,
+  CONSTRAINT "fk_treatment" FOREIGN KEY ("treatment_id")
+      REFERENCES "treatment_sessions"("id")
+      ON DELETE NO ACTION
+);
+
 ALTER TABLE "treatment_sessions" ADD FOREIGN KEY ("wound_id") REFERENCES "wounds" ("id");
 
 ALTER TABLE "treatment_sessions"
