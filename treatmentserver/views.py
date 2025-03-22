@@ -12,6 +12,7 @@ from django.core.files.base import ContentFile
 from datetime import datetime
 from django.forms.models import model_to_dict
 import boto3
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 
 s3 = boto3.client(
@@ -40,6 +41,33 @@ def set_treatment_parameters(request):
 
 # Retrieves a patient's most recent treatment before a given day
 # Expects a patient ID and treatment date to look before
+
+@api_view(['POST'])
+@csrf_exempt
+def update_wound_status(request):
+    """
+    API to update the wound's 'treated' status.
+    Expects a JSON body with 'wound_id' and 'treated' fields.
+    """
+    try:
+        data = json.loads(request.body)
+        wound_id = data.get("wound_id")
+        treated = data.get("treated")
+
+        if wound_id is None or treated is None:
+            return JsonResponse({"error": "Missing wound_id or treated field"}, status=400)
+
+        wound = Wounds.objects.filter(id=wound_id).first()
+        if wound:
+            wound.treated = treated
+            wound.save()
+            return JsonResponse({"message": "Wound status updated successfully"}, status=200)
+        else:
+            return JsonResponse({"error": "Wound not found"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
 @api_view(['GET'])
 def get_prev_treatment(request):
     patient_id = request.GET.get('id', None)
