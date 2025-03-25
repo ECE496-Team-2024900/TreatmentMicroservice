@@ -67,3 +67,6 @@ ADD "infection_type" varchar;
 
 ALTER TABLE "wounds"
 ADD "infection_location" varchar;
+
+ALTER TABLE "treatment_sessions"
+ADD treatment_score integer;
