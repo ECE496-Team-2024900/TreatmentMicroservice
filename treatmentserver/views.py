@@ -89,6 +89,26 @@ def get_prev_treatment(request):
         return JsonResponse({'message':str(e)}, status=500)
     return JsonResponse(model_to_dict(prev_treatment), status=200)
 
+# Retrieve treatment session info given a treatment id
+# Expects a treatment id to be passed in
+# Returns a json with keys and values corresponding to the treatment session fields
+@api_view(['GET'])
+# Retrieves a list of the patient's wounds
+# Expects a patient ID
+def get_patient_wounds(request):
+    # Parsing request parameters
+    patient_id = request.GET.get('id', None)
+
+    # Handling case of no patient ID found
+    if patient_id is None:
+        return JsonResponse({'message':'Please provide a patient ID'}, status=400)
+    try:
+       # Retrieving wounds from DB
+        wounds = Wounds.objects.filter(patient_id=patient_id).values_list('id', flat=True)
+        return JsonResponse({"message": list(wounds)}, status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
 # Retrieves treatments meeting specified criteria ordered from most to least recent
 # Expects a body that contains fields and their assignments to filter by
 # If a body isn't provided, function will still work, but recommended to use the get_all_treatments method
