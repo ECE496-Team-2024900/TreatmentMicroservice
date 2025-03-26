@@ -108,7 +108,7 @@ def get_treatments(request):
                                     wound_id=wound_id,
                                     wound__patient_id=patient_id
                                 ).order_by('-date_scheduled')
-        
+
         if sorted_past_patient_treatments.exists():
             return JsonResponse(list(sorted_past_patient_treatments.values()), safe=False, status=200)
     except Exception as e:
@@ -147,8 +147,9 @@ def add_video_call_id(request):
 @api_view(['GET'])
 def get_video_call_id(request):
     try:
-        obj = TreatmentSessions.objects.exclude(video_call_id__isnull=True).first()
-        if (obj is not None):
+        treatment_id = request.GET.get('id', None)
+        obj = TreatmentSessions.objects.get(id=treatment_id)
+        if (obj is not None and obj.video_call_id is not None):
             return JsonResponse({"message": str(obj.video_call_id)}, status=200)
         else:
             return JsonResponse({"message": "Video Call ID not found"}, status=404)
@@ -158,9 +159,9 @@ def get_video_call_id(request):
 @api_view(['PUT'])
 def remove_video_call_id(request):
     try:
-        req = json.loads(request.body.decode('utf-8'))
-        obj = TreatmentSessions.objects.get(id=req['id'])
-        if (obj is not None):
+        treatment_id = request.GET.get('id', None)
+        obj = TreatmentSessions.objects.get(id=treatment_id)
+        if (obj is not None and obj.video_call_id is not None):
             obj.video_call_id = None
             obj.save()
             return JsonResponse({"message": "Video Call ID is updated"}, status=200)
@@ -375,8 +376,9 @@ def add_treatment(request):
 @api_view(['PUT'])
 def request_reschedule(request):
     try:
+        treatment_id = request.GET.get('id')
         req = json.loads(request.body.decode('utf-8'))
-        obj = TreatmentSessions.objects.get(id=req['id'])
+        obj = TreatmentSessions.objects.get(id=treatment_id)
         if (obj is not None):
             obj.reschedule_requested = req['reschedule_requested']
             obj.save()
