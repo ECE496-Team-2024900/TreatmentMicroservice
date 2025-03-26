@@ -55,6 +55,7 @@ class TreatmentSessions(models.Model):
     session_number = models.IntegerField()
     pain_score = models.IntegerField(blank=True, null=True)
     image_urls = ArrayField(models.CharField(), default=list)
+    treatment_score = models.IntegerField(blank=True, null=True)
     reschedule_requested = models.BooleanField(default=False)
     wound_changing = models.BooleanField(blank=True, null=True)
     medicine_lot = models.CharField(blank=True, null=True)
