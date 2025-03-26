@@ -14,6 +14,10 @@ class Wounds(models.Model):
     clinician_id = models.CharField()
     device_id = models.CharField()
     treated = models.BooleanField()
+    date_added = models.DateField(blank=True, null=True)
+    infection_type = models.CharField(blank=True, null=True)
+    infection_location = models.CharField(blank=True, null=True)
+    medicine_name = models.CharField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -51,7 +55,21 @@ class TreatmentSessions(models.Model):
     session_number = models.IntegerField()
     pain_score = models.IntegerField(blank=True, null=True)
     image_urls = ArrayField(models.CharField(), default=list)
+    reschedule_requested = models.BooleanField()
+    treatment_score = models.IntegerField(blank=True, null=True)
+    reschedule_requested = models.BooleanField(default=False)
+    wound_changing = models.BooleanField(blank=True, null=True)
+    medicine_lot = models.CharField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'treatment_sessions'
+
+class Reports(models.Model):
+    treatment = models.ForeignKey('TreatmentSessions', on_delete=models.DO_NOTHING)
+    report_data = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = True
+        db_table = 'reports'

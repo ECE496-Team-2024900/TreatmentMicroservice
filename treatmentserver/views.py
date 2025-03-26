@@ -1,7 +1,7 @@
 import uuid
 import json
 from django.core.serializers import serialize
-from .models import TreatmentSessions, Wounds
+from .models import TreatmentSessions, Wounds, Reports
 from sys import exception
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -12,6 +12,8 @@ from django.core.files.base import ContentFile
 from datetime import datetime
 from django.forms.models import model_to_dict
 import boto3
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
 
 s3 = boto3.client(
    "s3",
@@ -39,6 +41,33 @@ def set_treatment_parameters(request):
 
 # Retrieves a patient's most recent treatment before a given day
 # Expects a patient ID and treatment date to look before
+
+@api_view(['POST'])
+@csrf_exempt
+def update_wound_status(request):
+    """
+    API to update the wound's 'treated' status.
+    Expects a JSON body with 'wound_id' and 'treated' fields.
+    """
+    try:
+        data = json.loads(request.body)
+        wound_id = data.get("wound_id")
+        treated = data.get("treated")
+
+        if wound_id is None or treated is None:
+            return JsonResponse({"error": "Missing wound_id or treated field"}, status=400)
+
+        wound = Wounds.objects.filter(id=wound_id).first()
+        if wound:
+            wound.treated = treated
+            wound.save()
+            return JsonResponse({"message": "Wound status updated successfully"}, status=200)
+        else:
+            return JsonResponse({"error": "Wound not found"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
 @api_view(['GET'])
 def get_prev_treatment(request):
     patient_id = request.GET.get('id', None)
@@ -120,8 +149,9 @@ def add_video_call_id(request):
 @api_view(['GET'])
 def get_video_call_id(request):
     try:
-        obj = TreatmentSessions.objects.exclude(video_call_id__isnull=True).first()
-        if (obj is not None):
+        treatment_id = request.GET.get('id', None)
+        obj = TreatmentSessions.objects.get(id=treatment_id)
+        if (obj is not None and obj.video_call_id is not None):
             return JsonResponse({"message": str(obj.video_call_id)}, status=200)
         else:
             return JsonResponse({"message": "Video Call ID not found"}, status=404)
@@ -131,9 +161,9 @@ def get_video_call_id(request):
 @api_view(['PUT'])
 def remove_video_call_id(request):
     try:
-        req = json.loads(request.body.decode('utf-8'))
-        obj = TreatmentSessions.objects.get(id=req['id'])
-        if (obj is not None):
+        treatment_id = request.GET.get('id', None)
+        obj = TreatmentSessions.objects.get(id=treatment_id)
+        if (obj is not None and obj.video_call_id is not None):
             obj.video_call_id = None
             obj.save()
             return JsonResponse({"message": "Video Call ID is updated"}, status=200)
@@ -150,6 +180,17 @@ def get_all_treatments(request):
             return JsonResponse({"message": list(obj.values())}, status=200)
         else:
             return JsonResponse({"message": "No treatment sessions exist"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_all_images_for_wound(request):
+    try:
+        obj = TreatmentSessions.objects.filter(wound=request.GET.get('wound')).values("id","image_urls")
+        if (obj is not None):
+            return JsonResponse({"message": list(obj)}, status=200)
+        else:
+            return JsonResponse({"message": "No images exist"}, status=404)
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
@@ -174,6 +215,19 @@ def add_images(request):
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
 
+
+@api_view(['GET'])
+def get_wound(request):
+    wound_id = request.GET.get('id', None)
+    if wound_id is None:
+        return JsonResponse({'message':'Please provide a wound ID'}, status=400)
+    try:
+        wound = Wounds.objects.filter(pk=wound_id).first()
+        if wound is None:
+            return JsonResponse({'message': 'No wound found for the given ID.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+    return JsonResponse({'message': model_to_dict(wound)}, status=200)
 
 @api_view(['GET'])
 def get_all_wounds(request):
@@ -206,6 +260,27 @@ def get_wounds(request):
         return JsonResponse({'message': str(e)}, status=500)
     return JsonResponse({'message': 'No wounds found.'}, status=204)
 
+# Get wound information for a wound ID
+# Expects a wound ID query parameter
+# Returns all information for that wound
+@api_view(['GET'])
+def get_wound_info(request):
+    try:
+        # Retrieve wound ID from query parameters
+        wound_id = request.GET.get("id")
+
+        # Find wound based on ID
+        obj = Wounds.objects.get(id=wound_id)
+
+        # Return wound information, if it exists
+        if (obj is not None):
+            return JsonResponse({"message": model_to_dict(obj)}, status=200)
+        else:
+            return JsonResponse({"message": "No wound information found"}, status=404)
+    except Exception as e:
+        # Internal server error handling
+        return JsonResponse({"message": str(e)}, status=500)
+  
 @api_view(['GET'])
 def get_session_info(request):
     # Get the treatment id parameter passed in
@@ -269,3 +344,125 @@ def get_treatment_timer(request, treatment_id):
 
     except TreatmentSessions.DoesNotExist:
         return JsonResponse({"message": "Treatment session not found"}, status=404)
+
+@api_view(["PUT"])
+def add_report(request):
+    try:
+        # Fetch query parameter
+        treatment_id = request.GET.get('id')
+
+        # Check to ensure this treatment exists
+        treatment = get_object_or_404(TreatmentSessions, id=treatment_id)
+        
+        # Parse the request body to get the report data
+        report_data = json.loads(request.body)["fileData"]
+
+        # Create the new report in the DB
+        report = Reports.objects.create(treatment_id=treatment_id, report_data=report_data)
+        return JsonResponse({"message": "Report added successfully"}, status=201)
+
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['POST'])
+def add_treatment(request):
+    try:
+        req = json.loads(request.body.decode('utf-8'))
+        TreatmentSessions.objects.create(**req)
+        return JsonResponse({"message": "Treatment added successfully"}, status=201)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+@api_view(['PUT'])
+def request_reschedule(request):
+    try:
+        treatment_id = request.GET.get('id')
+        req = json.loads(request.body.decode('utf-8'))
+        obj = TreatmentSessions.objects.get(id=treatment_id)
+        if (obj is not None):
+            obj.reschedule_requested = req['reschedule_requested']
+            obj.save()
+            return JsonResponse({"message": "Treatment session modified successfully"}, status=200)
+        else:
+            return JsonResponse({"message": "Treatment session not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+@api_view(['DELETE'])
+def cancel_treatment(request):
+    try:
+        treatment_id = request.GET.get('id', None)
+        TreatmentSessions.objects.get(id=treatment_id).delete()
+        return JsonResponse({"message": "Treatment session deleted"}, status=200)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+
+# Retrieve the report for a specific treatment session
+@api_view(["GET"])
+def get_report(request):
+    try:
+        # Fetch query parameter
+        treatment_id = request.GET.get('id')
+
+        # Fetch the report object
+        report = Reports.objects.get(treatment_id=treatment_id)
+
+        return JsonResponse(model_to_dict(report), status=200)
+    except Exception as e:
+        return JsonResponse({'message':str(e)}, status=500)
+
+# Retrieves wounds meeting specified criteria
+# Expects a body that contains fields and their assignments to filter by
+# If a body isn't provided, function will still work, but recommended to use the get_all_wounds method
+@api_view(['POST'])
+# Response HTTP status values:
+# - 200 = wounds returned
+# - 204 = no error, but no wounds exist meeting this criteria
+# - 500 = error encountered
+def get_wounds(request):
+    try:
+        filters = json.loads(request.body)
+
+        # Fetching wounds from DB
+        wounds = Wounds.objects.filter(**filters)
+        if wounds.exists():
+            return JsonResponse(list(wounds.values()), safe=False, status=200)
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=500)
+    return JsonResponse({'message': 'No wounds found.'}, status=204)
+    
+# Creates a new wound record in database
+# Expects a JSON body with key-value pairs that denote the fields and their values
+# Fields/keys required in JSON: infection_type, infection_location, device_id, patient_id, clinician_id, treated, date_added
+# Returns a success or error message
+@api_view(['PUT'])
+def create_wound(request):
+    try:
+        body = json.loads(request.body)
+        
+        # Extract fields
+        required_fields = ["infection_type", "infection_location", "device_id", "patient_id", "clinician_id", "treated", "date_added"]
+        missing_fields = [field for field in required_fields if field not in body]
+        
+        if missing_fields:
+            return JsonResponse({"message": f"Missing required fields: {', '.join(missing_fields)}"}, status=400)
+
+        # Create and save the wound record
+        new_wound = Wounds(
+            infection_type=body['infection_type'],
+            infection_location=body['infection_location'],
+            device_id=body['device_id'],
+            patient_id=body['patient_id'],
+            clinician_id=body['clinician_id'],
+            treated=body['treated'],
+            date_added=body['date_added']
+        )
+        new_wound.save()
+
+        return JsonResponse({"message": "Wound record created successfully"}, status=200)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"message": "Invalid JSON body"}, status=400)
+    except Exception as e:
+        return JsonResponse({"message": str(e)}, status=500)

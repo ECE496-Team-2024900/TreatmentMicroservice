@@ -39,6 +39,15 @@ CREATE TABLE "treatment_sessions" (
   "pain_score" integer
 );
 
+CREATE TABLE "reports" (
+  "treatment_id" integer NOT NULL,
+  "report_data" jsonb NOT NULL,
+  "created_at" timestamp,
+  CONSTRAINT "fk_treatment" FOREIGN KEY ("treatment_id")
+      REFERENCES "treatment_sessions"("id")
+      ON DELETE NO ACTION
+);
+
 ALTER TABLE "treatment_sessions" ADD FOREIGN KEY ("wound_id") REFERENCES "wounds" ("id");
 
 ALTER TABLE "treatment_sessions"
@@ -46,3 +55,27 @@ ADD "video_call_id" varchar;
 
 ALTER TABLE "treatment_sessions"
 ADD "image_urls" varchar[];
+
+ALTER TABLE "treatment_sessions"
+ADD "reschedule_requested" boolean DEFAULT false;
+
+ALTER TABLE "wounds"
+ADD "date_added" date;
+
+ALTER TABLE "wounds"
+ADD "infection_type" varchar;
+
+ALTER TABLE "wounds"
+ADD "infection_location" varchar;
+
+ALTER TABLE "treatment_sessions"
+ADD treatment_score integer;
+
+ALTER TABLE "wounds"
+ADD "medicine_name" varchar;
+
+ALTER TABLE "treatment_sessions"
+ADD "wound_changing" boolean;
+
+ALTER TABLE "treatment_sessions"
+ADD "medicine_lot" varchar;
