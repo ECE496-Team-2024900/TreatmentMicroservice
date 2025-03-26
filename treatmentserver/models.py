@@ -17,6 +17,7 @@ class Wounds(models.Model):
     date_added = models.DateField(blank=True, null=True)
     infection_type = models.CharField(blank=True, null=True)
     infection_location = models.CharField(blank=True, null=True)
+    medicine_name = models.CharField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -54,6 +55,8 @@ class TreatmentSessions(models.Model):
     session_number = models.IntegerField()
     pain_score = models.IntegerField(blank=True, null=True)
     image_urls = ArrayField(models.CharField(), default=list)
+    wound_changing = models.BooleanField(blank=True, null=True)
+    medicine_lot = models.CharField(blank=True, null=True)
 
     class Meta:
         managed = False
