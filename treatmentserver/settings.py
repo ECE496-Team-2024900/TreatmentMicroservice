@@ -118,22 +118,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'OPTIONS',
-]
-
-CORS_ALLOW_HEADERS = [
-    'content-type',
-    'authorization',
-    'accept',
-    'x-requested-with',
-]
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',  # Use 'mysql' if using MySQL
